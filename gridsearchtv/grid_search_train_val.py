@@ -25,11 +25,18 @@ class GridSearchTV:
         self.train_time = np.zeros(len(self.param_grid))
         self.val_scores = np.zeros(len(self.param_grid))
         self.val_time = np.zeros(len(self.param_grid))
+        self.params = params
+        self.results = []
 
     # Train and validate model for each parameter combination
     def fit(self, x_train, y_train, x_val, y_val, verbose: bool = False):
         if verbose:
             print('Testing {} parameters combinations'.format(len(self.param_grid)))
+            
+        if len(self.params) == 2:
+            keys = list(self.params)
+            n_1 = keys[0]
+            n_2 = keys[1]
 
         for i, params in enumerate(self.param_grid):
             self.model.set_params(**params)
@@ -64,6 +71,10 @@ class GridSearchTV:
                         params
                     )
                 )
+                
+            if len(parameters) == 2:
+               self.results.append([parameters[n_1], parameters[n_2]])
+                
         # Store best parameters, score and time
         self.best_score = np.max(self.val_scores)
         self.best_params = self.param_grid[np.argmax(self.val_scores)]
@@ -106,17 +117,28 @@ class GridSearchTV:
         plt.legend()
         plt.show()
 
-    def plot_scores_3d(self, show_best: bool = True, show_worse: bool = True):
+    def plot_scores_3d(self) -> None:
         fig = plt.figure()
+        ax = plt.axes(projection='3d')
         ax = fig.add_subplot(111, projection='3d')
-        ax.plot(self.train_scores, self.val_scores, self.train_time, label='train', mode='markers')
-        ax.plot(self.train_scores, self.val_scores, self.val_time, label='validation', mode='markers')
-        if show_best:
-            ax.scatter(self.train_scores[np.argmax(self.val_scores)], self.best_score,
-                       self.train_time[np.argmax(self.val_scores)], label='best', c='g')
-        if show_worse:
-            ax.scatter(self.train_scores[np.argmin(self.val_scores)], self.worst_score,
-                       self.train_time[np.argmin(self.val_scores)], label='worse', c='r')
+        keys = list(self.params)
+        name_1 = keys[0]
+        name_2 = keys[1]
+        x_data = []
+        y_data = []
+        z_data_val = self.val_scores
+        z_data_train = self.train_scores
+
+        for i, parameters in enumerate(self.param_grid):
+            x_data.append(parameters[name_2])
+            y_data.append(parameters[name_1])
+
+        ax.scatter(x_data, y_data, z_data_val,  c ="orange", label = 'validation')
+        ax.scatter(x_data, y_data, z_data_train,  c ="blue", label = 'train')
+
+        ax.set_xlabel(name_2)
+        ax.set_ylabel(name_1)
+        ax.set_zlabel('Score')
         ax.legend()
         plt.show()
 
