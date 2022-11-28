@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 # TODO: add support for bw images
 
 # Dataset for unlabeled images
-class LazyUnlabeledImageDataset(Dataset):
+class UnlabeledImageDataset(Dataset):
     
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir

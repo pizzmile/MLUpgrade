@@ -1,3 +1,5 @@
+import numpy as np
+
 class EarlyStopper:
     '''
     Class to model early stopping monitor.
@@ -10,7 +12,7 @@ class EarlyStopper:
     STRICT_MAX_CRITERION = 'strict_max'
     STRICT_MIN_CRITERION = 'strict_min'
     
-    def __init__(self, patience: int, criterion: str = 'min'):
+    def __init__(self, patience: int, criterion: str = 'min', verbose: int = 0):
         self.CRITERIONS = {
             self.MAX_CRITERION: self.__max_criterion_update, 
             self.MIN_CRITERION: self.__min_criterion_update,
@@ -26,6 +28,8 @@ class EarlyStopper:
         
         self.patience = patience
         self.counter = 0
+        
+        self.verbose = verbose
         
     def __max_criterion_update(self, metric) -> bool:
         return metric >= self.best_value
@@ -50,9 +54,14 @@ class EarlyStopper:
         if self.CRITERIONS[self.criterion](metric):
             self.best_value = metric
             self.counter = 0
+            
+            if self.verbose > 0:
+                print(f'[EarlyStopper]: New best value: {self.best_value}')
         else:
             self.counter += 1
+            print(f'[EarlyStopper]: Counter: {self.counter}')
             if self.counter == self.patience - 1:
+                print(f'[EarlyStopper]: Patience reached. Stopping...')
                 return True
             
         return False
